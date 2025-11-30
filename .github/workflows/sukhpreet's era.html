@@ -1,0 +1,495 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sukhpreet's Era</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Font: Inter (clean, modern) & Teko (strong, for headings) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Teko:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Custom styles */
+        :root {
+            --bg-color: #000000;
+            --card-color: #1a1a1a; /* Thoda lighter black */
+            --text-primary: #f0f0f0;
+            --text-secondary: #a0a0a0;
+            --accent-primary: #3b82f6; /* Focus Blue */
+            --accent-secondary: #f59e0b; /* Highlight Amber */
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+        }
+
+        /* Strong heading font */
+        .font-teko {
+            font-family: 'Teko', sans-serif;
+        }
+
+        /* Custom scrollbar (minimalist) */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--card-color);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 4px;
+        }
+
+        /* Custom checkbox */
+        .task-checkbox {
+            appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%; /* Gol checkbox */
+            border: 2px solid var(--text-secondary);
+            background-color: transparent;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            flex-shrink: 0; /* Stop it from shrinking */
+        }
+        .task-checkbox:checked {
+            background-color: var(--accent-primary);
+            border-color: var(--accent-primary);
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+            background-size: 80%;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* Modal styles */
+        .modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+        
+        /* Progress bar */
+        .progress-bar-inner {
+            transition: width 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Main Container -->
+    <div class="container mx-auto max-w-lg min-h-screen p-4 pb-24">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center py-4">
+            <h1 class="text-5xl font-teko tracking-wider">Sukhpreet's Era</h1>
+            <div class="text-right">
+                <div id="current-date" class="text-sm font-medium text-gray-400"></div>
+                <div id="current-time" class="text-lg font-medium"></div>
+            </div>
+        </header>
+
+        <!-- Focus Quote -->
+        <div class="my-4 p-4 bg-gray-900 rounded-lg border border-gray-800">
+            <p id="focus-quote" class="text-sm italic text-center text-gray-400"></p>
+        </div>
+
+        <!-- Current Task Spotlight -->
+        <section id="spotlight" class="mb-6">
+            <div class="bg-gray-900 border-2 border-accent-primary rounded-2xl p-5 shadow-2xl shadow-blue-500/10">
+                <div class="flex justify-between items-center mb-1">
+                    <h2 class="text-sm font-bold uppercase tracking-widest text-accent-primary">NOW</h2>
+                    <span id="current-task-range" class="text-sm font-medium text-gray-400"></span>
+                </div>
+                <p id="current-task-name" class="text-4xl font-bold font-teko tracking-wide">Loading...</p>
+                <p id="current-task-desc" class="text-gray-300 mt-1">Please wait...</p>
+            </div>
+        </section>
+        
+        <!-- Daily Progress -->
+        <section class="mb-6">
+             <h3 class="text-lg font-bold mb-2 font-teko tracking-wide">DAILY PROGRESS</h3>
+             <div class="w-full bg-gray-800 rounded-full h-2.5">
+                <div id="progress-bar" class="bg-accent-primary h-2.5 rounded-full progress-bar-inner" style="width: 0%"></div>
+            </div>
+            <p id="progress-text" class="text-center text-sm text-gray-400 mt-2">0/13 Tasks Completed (0%)</p>
+        </section>
+
+        <!-- Daily Routine ("The Path") -->
+        <section class="mb-6">
+            <h2 class="text-3xl font-teko tracking-wide mb-3">THE PATH (Daily Routine)</h2>
+            <div id="routine-list" class="space-y-3">
+                <!-- Routine items will be injected by JS -->
+            </div>
+        </section>
+
+        <!-- Monk Rules ("The Code") -->
+        <section class="mb-6">
+            <button id="show-rules-btn" class="w-full bg-gray-800 text-gray-200 py-3 px-5 rounded-lg text-lg font-bold font-teko tracking-wider text-center hover:bg-gray-700 transition-colors">
+                VIEW MONK RULES
+            </button>
+        </section>
+
+        <!-- Goals ("The Mission") -->
+        <section class="mb-6">
+            <h2 class="text-3xl font-teko tracking-wide mb-3">THE MISSION (Goals)</h2>
+            <div class="space-y-3">
+                <!-- Main Goal -->
+                <div class="bg-accent-secondary text-black p-4 rounded-lg shadow-lg">
+                    <p class="text-sm font-bold uppercase opacity-80">Main Goal</p>
+                    <p class="text-xl font-bold">Become a Billionaire</p>
+                </div>
+                <!-- Sub Goals -->
+                <div class="bg-gray-800 p-4 rounded-lg">
+                    <p class="text-sm font-bold uppercase text-gray-400">Sub-Goal</p>
+                    <p class="text-xl font-bold">Master Public Speaking</p>
+                </div>
+                 <div class="bg-gray-800 p-4 rounded-lg">
+                    <p class="text-sm font-bold uppercase text-gray-400">Sub-Goal</p>
+                    <p class="text-xl font-bold">Build Video Editing Agency</p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-lg">
+                    <p class="text-sm font-bold uppercase text-gray-400">Sub-Goal</p>
+                    <p class="text-xl font-bold">Achieve Peak Self-Growth</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills ("The Armory") -->
+        <section class="mb-6">
+            <h2 class="text-3xl font-teko tracking-wide mb-3">THE ARMORY (Skills)</h2>
+            <div class="grid grid-cols-3 gap-3">
+                <div class="bg-gray-800 p-3 rounded-lg text-center font-medium">Coding</div>
+                <div class="bg-gray-800 p-3 rounded-lg text-center font-medium">Video Editing</div>
+                <div class="bg-gray-800 p-3 rounded-lg text-center font-medium">Sales</div>
+                <div class="bg-gray-800 p-3 rounded-lg text-center font-medium">Stock Market</div>
+                <div class="bg-gray-800 p-3 rounded-lg text-center font-medium">Finance</div>
+                <div class="bg-gray-800 p-3 rounded-lg text-center font-medium">E-commerce</div>
+            </div>
+        </section>
+
+        <!-- Profile Info -->
+        <section class="text-center text-gray-600 text-xs mt-12 pb-4">
+            <p>Sukhpreet | 16 | Class 12 (RBSE)</p>
+            <p>Bhakranwali, Sangaria</p>
+            <p class="mt-2">&copy; 2025 Sukhpreet's Era. Built for focus.</p>
+        </section>
+    </div>
+
+    <!-- Notification / Modal Container -->
+    <div id="modal-container" class="modal fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50 invisible opacity-0">
+        <div class="modal-content bg-gray-900 w-full max-w-sm rounded-2xl shadow-2xl p-6 border border-gray-700 transform scale-95">
+            <h3 id="modal-title" class="text-2xl font-teko tracking-wide mb-3">Modal Title</h3>
+            <div id="modal-body" class="text-gray-300 mb-6">
+                <p>Modal content goes here.</p>
+            </div>
+            <button id="modal-close-btn" class="w-full bg-accent-primary text-black py-3 px-5 rounded-lg text-lg font-bold font-teko tracking-wider text-center transition-opacity hover:opacity-90">
+                DISMISS
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DATABASE ---
+            const quotes = [
+                "Discipline today decides your lifestyle tomorrow. Follow your routine like a monk.",
+                "Work hard, improve daily, and never stop learning — success follows those who are ready to evolve.",
+                "Excuses are not allowed."
+            ];
+
+            // Routine based on your PDF
+            const routine = [
+                // MORNING BLOCK (04:00 - 08:00)
+                { id: 'task1', start: 4.00, end: 4.17, time: "04:00-04:10", name: "Meditation", desc: "Deep breathing, mind reset." },
+                { id: 'break1', start: 4.17, end: 4.25, time: "04:10-04:15", name: "Break", desc: "Short 5-min rest." },
+                { id: 'task2', start: 4.25, end: 4.75, time: "04:15-04:45", name: "Workout", desc: "Full body exercise." },
+                { id: 'break2', start: 4.75, end: 4.83, time: "04:45-04:50", name: "Break", desc: "Short 5-min rest." },
+                { id: 'task3', start: 4.83, end: 5.33, time: "04:50-05:20", name: "Bath & Clean Room", desc: "Freshen up and organize." },
+                { id: 'break3', start: 5.33, end: 5.42, time: "05:20-05:25", name: "Break", desc: "Short 5-min rest." },
+                { id: 'task4', start: 5.42, end: 5.83, time: "05:25-05:50", name: "Deep Study Session 1", desc: "Maths / Physics (25 min)" },
+                { id: 'break4', start: 5.83, end: 5.92, time: "05:50-05:55", name: "Break", desc: "Short 5-min rest." },
+                { id: 'task5', start: 5.92, end: 6.58, time: "05:55-06:35", name: "Reading & Self-Improvement", desc: "Finance, mindset (40 min)" },
+                { id: 'break5', start: 6.58, end: 6.67, time: "06:35-06:40", name: "Break", desc: "Short 5-min rest." },
+                { id: 'task6', start: 6.67, end: 7.50, time: "06:40-07:30", name: "Get Ready & Breakfast", desc: "Prepare for the day (50 min)" },
+                { id: 'task7', start: 7.50, end: 8.00, time: "07:30-08:00", name: "Commute / Light Revision", desc: "Active travel." },
+                
+                // SCHOOL BLOCK (08:00 - 17:30)
+                { id: 'task8', start: 8.00, end: 17.50, time: "08:00-17:30", name: "School Time", desc: "Full focus. No distractions." },
+                
+                // EVENING BLOCK (17:30 - 20:00)
+                { id: 'task9', start: 17.50, end: 17.92, time: "17:30-17:55", name: "Rest / Walk", desc: "Mind relaxation (25 min)" },
+                { id: 'break6', start: 17.92, end: 18.00, time: "17:55-18:00", name: "Break", desc: "Short 5-min rest." },
+                { id: 'task10', start: 18.00, end: 18.50, time: "18:00-18:30", name: "Video Editing Agency", desc: "Client work (30 min)" },
+                { id: 'break7', start: 18.50, end: 18.58, time: "18:30-18:35", name: "Break", desc: "Short 5-min rest." },
+                { id: 'task11', start: 18.58, end: 19.25, time: "18:35-19:15", name: "Communication / Light Study", desc: "Improve speaking (40 min)" },
+                { id: 'break8', start: 19.25, end: 19.33, time: "19:15-19:20", name: "Break", desc: "Short 5-min rest." },
+                { id: 'task12', start: 19.33, end: 19.75, time: "19:20-19:45", name: "Plan & Reflect", desc: "Plan next day (25 min)" },
+                { id: 'task13', start: 19.75, end: 20.00, time: "19:45-20:00", name: "Shutdown", desc: "Phone away. Prepare for sleep." },
+            ];
+
+            // Off-time / Sleep
+            const sleepTask = { time: "20:00-04:00", name: "Sleep", desc: "Deep rest. Phone is off." };
+            
+            const monkRules = [
+                "No phone after 7:45 PM.",
+                "No random scrolling during the day.",
+                "At least 80% routine completion daily.",
+                "Daily learning and self-growth is compulsory.",
+                "Excuses are not allowed.",
+                "Discipline today decides your lifestyle tomorrow."
+            ];
+
+            // --- ELEMENTS ---
+            const dateTimeEl = document.getElementById('current-time');
+            const dateEl = document.getElementById('current-date');
+            const quoteEl = document.getElementById('focus-quote');
+            const spotlightRangeEl = document.getElementById('current-task-range');
+            const spotlightNameEl = document.getElementById('current-task-name');
+            const spotlightDescEl = document.getElementById('current-task-desc');
+            const routineListEl = document.getElementById('routine-list');
+            const progressBarEl = document.getElementById('progress-bar');
+            const progressTextEl = document.getElementById('progress-text');
+            const modalContainer = document.getElementById('modal-container');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+            const showRulesBtn = document.getElementById('show-rules-btn');
+
+            let lastNotificationTime = null; // To prevent notification spam
+
+            // --- FUNCTIONS ---
+
+            // Initialize the app
+            function init() {
+                // Set a random focus quote
+                quoteEl.textContent = quotes[Math.floor(Math.random() * quotes.length)];
+                
+                // Populate routine list
+                populateRoutine();
+                
+                // Load saved progress
+                loadProgress();
+                
+                // Start clocks
+                updateTimeAndTask(); // Run once immediately
+                setInterval(updateTimeAndTask, 1000); // Update time every second
+                
+                // Add event listeners
+                routineListEl.addEventListener('change', handleTaskToggle);
+                modalCloseBtn.addEventListener('click', hideModal);
+                showRulesBtn.addEventListener('click', showMonkRules);
+            }
+
+            // Update time, date, and current task
+            function updateTimeAndTask() {
+                const now = new Date();
+                const hours = now.getHours();
+                const minutes = now.getMinutes();
+                const seconds = now.getSeconds();
+                const day = now.toLocaleDateString(undefined, { weekday: 'long' });
+                const date = now.toLocaleDateString(undefined, { day: 'numeric', month: 'long' });
+                
+                // 1. Update Clock
+                dateTimeEl.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+                dateEl.textContent = `${day}, ${date}`;
+                
+                // 2. Update Current Task (only check every 10 seconds to save performance)
+                if (seconds % 10 === 0 || seconds === 0) {
+                     updateCurrentTask(now);
+                }
+            }
+            
+            // Find and display the current task
+            function updateCurrentTask(now) {
+                const hours = now.getHours();
+                const minutes = now.getMinutes();
+                const currentTime = hours + (minutes / 60);
+
+                let currentTask = null;
+
+                for (const task of routine) {
+                    if (currentTime >= task.start && currentTime < task.end) {
+                        currentTask = task;
+                        break;
+                    }
+                }
+
+                if (currentTask) {
+                    // We are in a scheduled task
+                    spotlightRangeEl.textContent = currentTask.time;
+                    spotlightNameEl.textContent = currentTask.name;
+                    spotlightDescEl.textContent = currentTask.desc;
+                    
+                    // Check for end-of-day rule
+                    if (currentTask.id === 'task13' && minutes > 45 && lastNotificationTime !== 1945) {
+                         showModal(
+                            "MONK RULE", 
+                            "<p>Your day is complete. It is 7:45 PM. Plan tomorrow and shut down your phone.</p><p class='font-bold mt-2'>Discipline is key.</p>"
+                         );
+                         lastNotificationTime = 1945;
+                    }
+                } else {
+                    // We are in sleep time
+                    spotlightRangeEl.textContent = sleepTask.time;
+                    spotlightNameEl.textContent = sleepTask.name;
+                    spotlightDescEl.textContent = sleepTask.desc;
+                    
+                    // Trigger "Sleep Warning"
+                    if (lastNotificationTime !== 'sleep') {
+                        showModal(
+                            "MONK RULE VIOLATION",
+                            "<p>You should be sleeping. Deep rest is essential for peak performance.</p><p class='font-bold mt-2'>Get off the device. Follow the code.</p>"
+                        );
+                        lastNotificationTime = 'sleep';
+                    }
+                }
+            }
+
+            // Populate the routine list
+            function populateRoutine() {
+                routine.forEach(task => {
+                    const item = document.createElement('div');
+                    // Style breaks differently
+                    if (task.name.toLowerCase() === 'break') {
+                        item.className = 'bg-gray-900 p-2 rounded-lg flex items-center justify-between transition-all opacity-80'; // Less prominent
+                    } else {
+                        item.className = 'bg-gray-800 p-4 rounded-xl flex items-center justify-between transition-all';
+                    }
+                    
+                    item.innerHTML = `
+                        <div class="flex items-center ${task.name.toLowerCase() === 'break' ? 'w-full' : ''}">
+                            <input type="checkbox" id="${task.id}" data-task-id="${task.id}" class="task-checkbox mr-4 ${task.name.toLowerCase() === 'break' ? 'w-6 h-6' : ''}">
+                            <label for="${task.id}" class="flex ${task.name.toLowerCase() === 'break' ? 'w-full justify-between items-center' : 'flex-col'}">
+                                <span class="font-bold leading-tight">${task.name}</span>
+                                <span class="text-sm text-gray-400 leading-tight">${task.time}</span>
+                            </label>
+                        </div>
+                    `;
+                    routineListEl.appendChild(item);
+                });
+            }
+
+            // Handle task checkbox toggle
+            function handleTaskToggle(e) {
+                if (!e.target.matches('.task-checkbox')) return;
+                
+                const checkbox = e.target;
+                const taskId = checkbox.dataset.taskId;
+                const isChecked = checkbox.checked;
+                
+                // Find the parent div and style it
+                const taskDiv = checkbox.closest('div');
+                if (isChecked) {
+                    taskDiv.classList.add('opacity-50');
+                    taskDiv.style.textDecoration = 'line-through';
+                } else {
+                    taskDiv.classList.remove('opacity-50');
+                    taskDiv.style.textDecoration = 'none';
+                }
+                
+                saveProgress();
+            }
+
+            // Get today's date as YYYY-MM-DD
+            function getTodayString() {
+                return new Date().toISOString().split('T')[0];
+            }
+
+            // Save progress to localStorage
+            function saveProgress() {
+                const today = getTodayString();
+                const completedTasks = [];
+                
+                document.querySelectorAll('.task-checkbox').forEach(cb => {
+                    if (cb.checked) {
+                        completedTasks.push(cb.dataset.taskId);
+                    }
+                });
+                
+                const progress = {
+                    date: today,
+                    tasks: completedTasks
+                };
+                
+                localStorage.setItem('sukhMonkProgress', JSON.stringify(progress));
+                updateProgressUI();
+            }
+
+            // Load progress from localStorage
+            function loadProgress() {
+                const today = getTodayString();
+                const savedProgress = JSON.parse(localStorage.getItem('sukhMonkProgress'));
+
+                if (savedProgress && savedProgress.date === today) {
+                    savedProgress.tasks.forEach(taskId => {
+                        const checkbox = document.getElementById(taskId);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                            // Trigger style update
+                            const event = new Event('change', { bubbles: true });
+                            checkbox.dispatchEvent(event);
+                        }
+                    });
+                } else {
+                    // It's a new day, clear old progress
+                    localStorage.removeItem('sukhMonkProgress');
+                }
+                
+                updateProgressUI();
+            }
+
+            // Update the progress bar and text
+            function updateProgressUI() {
+                const totalTasks = routine.length;
+                const completedTasks = document.querySelectorAll('.task-checkbox:checked').length;
+                const percentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+                
+                progressBarEl.style.width = `${percentage}%`;
+                progressTextEl.textContent = `${completedTasks}/${totalTasks} Tasks Completed (${Math.round(percentage)}%)`;
+
+                // Check for 80% rule
+                if (percentage >= 80 && lastNotificationTime !== '80percent') {
+                    showModal("PROGRESS ALERT", "<p>You have hit 80% completion. Excellent work. Maintain the discipline.</p>");
+                    lastNotificationTime = '80percent';
+                }
+            }
+
+            // Show the modal
+            function showModal(title, bodyHtml) {
+                modalTitle.textContent = title;
+                modalBody.innerHTML = bodyHtml;
+                modalContainer.classList.remove('invisible', 'opacity-0');
+                modalContainer.querySelector('.modal-content').classList.remove('scale-95');
+            }
+
+            // Hide the modal
+            function hideModal() {
+                modalContainer.classList.add('invisible', 'opacity-0');
+                modalContainer.querySelector('.modal-content').classList.add('scale-95');
+            }
+            
+            // Show the Monk Rules in the modal
+            function showMonkRules() {
+                const rulesHtml = '<ul class="list-disc list-inside space-y-2">' + 
+                    monkRules.map(rule => `<li>${rule}</li>`).join('') + 
+                    '</ul>';
+                showModal("THE MONK CODE", rulesHtml);
+            }
+
+            // Utility: Pad number with zero
+            function pad(num) {
+                return num < 10 ? '0' + num : num;
+            }
+
+            // --- START THE APP ---
+            init();
+        });
+    </script>
+</body>
+</html>
